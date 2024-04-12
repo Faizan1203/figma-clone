@@ -9,7 +9,7 @@ const ActiveUsers = () => {
   const hasMoreUsers = users.length > 3;
   const memoizedUsers = useMemo(() => {
     return (
-      <div className="flex items-center justify-center gap-1">
+      <div className="flex items-center justify-center gap-1 py-2">
         {currentUser && (
           <Avatar name="You" otherStyles="border-[3px] border-primary-green" />
         )}
