@@ -1,5 +1,5 @@
+"use client"
 import dynamic from "next/dynamic";
-
 /**
  * disable ssr to avoid pre-rendering issues of Next.js
  *
