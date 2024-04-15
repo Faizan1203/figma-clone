@@ -9,12 +9,13 @@ import {
   handleCanvasMouseDown,
   handleCanvasMouseUp,
   handleCanvasObjectModified,
+  handleCanvasSelectionCreated,
   handleCanvaseMouseMove,
   handleResize,
   initializeFabric,
   renderCanvas,
 } from "@/lib/canvas";
-import { ActiveElement } from "@/types/type";
+import { ActiveElement, Attributes } from "@/types/type";
 import { useMutation, useRedo, useStorage, useUndo } from "@/liveblocks.config";
 import { defaultNavElement } from "@/constants";
 import { handleDelete, handleKeyDown } from "@/lib/key-events";
@@ -28,6 +29,17 @@ export default function Page() {
   const isDrawing = useRef(false);
   const shapeRef = useRef<fabric.Object | null>(null);
   const selectedShapeRef = useRef<string | null>(null);
+
+  const isEditingRef = useRef(false);
+  const [elementAttributes, setElementAttributes] = useState<Attributes>({
+    height: "",
+    width: "",
+    fontSize: "",
+    fontFamily: "",
+    fontWeight: "",
+    fill: "#aabbcc",
+    stroke: "#aabbcc",
+  });
   const [activeElement, setActiveElement] = useState<ActiveElement>({
     name: "",
     value: "",
@@ -96,7 +108,7 @@ export default function Page() {
 
   useEffect(() => {
     const canvas = initializeFabric({ canvasRef, fabricRef });
-    canvas.on("mouse:down", (options:any) => {
+    canvas.on("mouse:down", (options: any) => {
       handleCanvasMouseDown({
         options,
         canvas,
@@ -106,7 +118,7 @@ export default function Page() {
       });
     });
 
-    canvas.on("mouse:move", (options:any) => {
+    canvas.on("mouse:move", (options: any) => {
       handleCanvaseMouseMove({
         options,
         canvas,
@@ -127,10 +139,18 @@ export default function Page() {
         activeObjectRef,
       });
     });
-    canvas.on("object:modified", (options:any) => {
+    canvas.on("object:modified", (options: any) => {
       handleCanvasObjectModified({
         options,
         syncShapeInStorage,
+      });
+    });
+
+    canvas.on("selection:created", (options: any) => {
+      handleCanvasSelectionCreated({
+        options,
+        isEditingRef,
+        setElementAttributes,
       });
     });
     window.addEventListener("resize", () => {
@@ -171,14 +191,21 @@ export default function Page() {
             file: e.target.files[0],
             canvas: fabricRef as any,
             shapeRef,
-            syncShapeInStorage
-          })
+            syncShapeInStorage,
+          });
         }}
       />
       <section className="flex h-full flex-row">
         <LeftSidebar allShapes={Array.from(canvasObjects)} />
         <Live canvasRef={canvasRef} />
-        <RightSidebar />
+        <RightSidebar
+          elementAttributes={elementAttributes}
+          setElementAttributes={setElementAttributes}
+          fabricRef={fabricRef}
+          isEditingRef={isEditingRef}
+          activeObjectRef={activeObjectRef}
+          syncShapeInStorage={syncShapeInStorage} 
+        />
       </section>
     </main>
   );
